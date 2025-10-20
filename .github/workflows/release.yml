@@ -1,0 +1,20 @@
+name: release
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Install release tools
+        run: npm install -g standard-version
+      - name: Bump version & changelog
+        run: |
+          standard-version --release-as minor --prerelease beta --skip.tag=false
+      - name: Push tag
+        run: |
+          git push --follow-tags origin main
