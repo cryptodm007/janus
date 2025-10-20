@@ -1,14 +1,8 @@
 ---
 name: Feature request
-about: Sugerir melhoria/feature
-labels: enhancement
+about: Sugira uma ideia
 ---
 
-**Contexto/motivação**
-...
-
-**Descrição da solução**
-...
-
-**Alternativas consideradas**
-...
+## Problema
+## Proposta
+## Impacto em Testnet
