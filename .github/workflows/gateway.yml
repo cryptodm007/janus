@@ -22,7 +22,7 @@ jobs:
         run: npm i -g pnpm
       - name: Install deps
         run: pnpm i
-      - name: Lint (stub)
-        run: echo "TODO: pnpm -w lint"
-      - name: Build (stub)
-        run: pnpm -w build
+      - name: Build adapter
+        run: pnpm --filter @janus/adapter-base-solana build
+      - name: Build gateway
+        run: pnpm --filter @janus/gateway build
