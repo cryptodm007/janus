@@ -1,0 +1,13 @@
+{
+  "name": "@janus/bridge-cli",
+  "version": "0.2.0-alpha",
+  "private": false,
+  "type": "module",
+  "bin": {
+    "janus-base-cli": "./base-cli.mjs",
+    "janus-solana-cli": "./solana-cli.mjs"
+  },
+  "scripts": {
+    "test": "node --version && echo \"(cli smoke)\""
+  }
+}
