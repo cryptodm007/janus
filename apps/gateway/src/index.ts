@@ -5,6 +5,10 @@ import * as dotenv from 'dotenv';
 import { logger } from './logger';
 import { validateEnvelope } from './validator';
 import { sendMessage, awaitProveAndFinalize } from '@janus/adapter-base-solana';
+const JANUS_NETWORK = process.env.JANUS_NETWORK || "TESTNET";
+if (JANUS_NETWORK !== "TESTNET") {
+  throw new Error("JANUS_NETWORK must be TESTNET while bridge is not on mainnet");
+}
 
 dotenv.config({ path: new URL('../.env', import.meta.url).pathname });
 
