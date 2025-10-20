@@ -1,0 +1,22 @@
+version: '3.9'
+services:
+  gateway:
+    build:
+      context: ../..
+      dockerfile: ops/docker/gateway.Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - BRIDGE_BASE_CLI=node tools/base-solana-bridge-cli/base-cli.mjs
+      - BRIDGE_SOLANA_CLI=node tools/base-solana-bridge-cli/solana-cli.mjs
+      - BRIDGE_BASE_NETWORK=sepolia
+      - BRIDGE_SOLANA_NETWORK=devnet
+      - ADAPTER_MAX_WAIT_MS=900000
+      - ADAPTER_POLL_MS=5000
+    depends_on:
+      - adapter
+
+  adapter:
+    build:
+      context: ../..
+      dockerfile: ops/docker/adapter.Dockerfile
