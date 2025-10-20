@@ -14,7 +14,7 @@ class ChainPointer(BaseModel):
 
 class CoreEvent(BaseModel):
     id: str = Field(..., description="Determinístico p/ idempotência (tx_hash+log_index ou hash do payload)")
-    type: Literal["TRANSFER", "ORACLE_UPDATE", "AGENT_SIGNAL", "BRIDGE_MESSAGE"]
+    type: Literal["TRANSFER", "ORACLE_UPDATE", "AGENT_SIGNAL", "BRIDGE_MESSAGE", "CHAIN_HEAD"]
     payload: Dict[str, Any]
     source: ChainPointer
     observed_at: float
