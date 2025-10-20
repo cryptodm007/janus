@@ -1,3 +1,4 @@
 packages:
   - apps/*
   - packages/*
+  - tools/*        # vamos usar na Fase 2b (CLI fino)
