@@ -1,4 +1,3 @@
-# janus/bridge/sync/sync_manager.py
 import asyncio
 from bridge.vendor.bridge_base_solana import BaseSolanaBridge
 from core.state_manager import StateManager
@@ -21,7 +20,7 @@ class SyncManager:
                 await asyncio.sleep(5)
 
     def merge_states(self, base_state, solana_state):
-        # Estratégia simples: escolhe o estado com timestamp mais recente.
+        # Estratégia simples: escolhe o estado com timestamp mais recente
         if base_state["timestamp"] > solana_state["timestamp"]:
             return base_state
         return solana_state
