@@ -1,0 +1,71 @@
+
+### 2.2 Criar `examples/web2-bridge/n8n-workflow.json`
+`examples/web2-bridge/n8n-workflow.json`
+```json
+{
+  "name": "Janus Webhook → Intent → Status",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "janus/webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 200],
+      "webhookId": "janus-webhook",
+      "name": "Webhook (POST)"
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            { "name": "GATEWAY_BASE_URL", "value": "http://localhost:8080" },
+            { "name": "executor", "value": "0x0000000000000000000000000000000000000000" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "position": [420, 200],
+      "name": "Config"
+    },
+    {
+      "parameters": {
+        "url": "={{$json[\"GATEWAY_BASE_URL\"] + \"/mcp/intent\"}}",
+        "options": {
+          "bodyContentType": "json"
+        },
+        "jsonParameters": true,
+        "responseFormat": "json",
+        "sendBody": true,
+        "bodyParametersJson": "={\n  \"type\": \"request\",\n  \"id\": $json[\"body\"][\"id\"] || \"web2-\" + Date.now(),\n  \"method\": \"call_tool\",\n  \"params\": {\"name\":\"swap\",\"arguments\":{\"tokenIn\":$json[\"body\"][\"tokenIn\"],\"tokenOut\":$json[\"body\"][\"tokenOut\"],\"amount\":$json[\"body\"][\"amount\"]}},\n  \"chain\": {\n    \"origin\": \"Base\",\n    \"destination\": \"Solana\",\n    \"executor\": $json[\"executor\"],\n    \"signature\": \"0xSIG\",\n    \"deadline\": {{ Math.floor(Date.now()/1000) + 3600 }}\n  }\n}"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [640, 200],
+      "name": "POST /mcp/intent"
+    },
+    {
+      "parameters": {
+        "functionCode": "const id = $json.id || ($json.body && $json.body.id);\nreturn [{ id }];"
+      },
+      "type": "n8n-nodes-base.function",
+      "position": [860, 200],
+      "name": "Extract intentId"
+    },
+    {
+      "parameters": {
+        "functionCode": "const start = Date.now();\nconst maxWait = 60000; // 60s\nconst poll = 3000;     // 3s\n\nasync function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }\n\nasync function run() {\n  const base = $json.GATEWAY_BASE_URL || $items(\"Config\")[0].json.GATEWAY_BASE_URL || 'http://localhost:8080';\n  const id = $json.id;\n  while (Date.now() - start < maxWait) {\n    const url = `${base}/mcp/status/${encodeURIComponent(id)}`;\n    const res = await $httpRequest({ url, method: 'GET', json: true });\n    if (res && res.status && ['FINALIZED','EXECUTED','REJECTED'].includes(res.status)) {\n      return [{ id, status: res.status }];\n    }\n    await sleep(poll);\n  }\n  return [{ id, status: 'REJECTED', error: 'timeout' }];\n}\n\nreturn run();"
+      },
+      "type": "n8n-nodes-base.function",
+      "position": [1080, 200],
+      "name": "Poll status"
+    }
+  ],
+  "connections": {
+    "Webhook (POST)": { "main": [ [ { "node": "Config", "type": "main", "index": 0 } ] ] },
+    "Config": { "main": [ [ { "node": "POST /mcp/intent", "type": "main", "index": 0 } ] ] },
+    "POST /mcp/intent": { "main": [ [ { "node": "Extract intentId", "type": "main", "index": 0 } ] ] },
+    "Extract intentId": { "main": [ [ { "node": "Poll status", "type": "main", "index": 0 } ] ] }
+  }
+}
