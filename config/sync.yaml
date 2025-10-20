@@ -1,18 +1,35 @@
-# config/sync.yaml
-# Parâmetros de sincronização (ajuste conforme ambiente de dev)
 listeners:
   base-testnet:
     enabled: true
-    poll_interval: 2
+    ws_endpoint_env: "BASE_WS_ENDPOINT"
+    http_endpoint_env: "BASE_HTTP_ENDPOINT"
+    poll_interval_sec: 2
+    # Filtragem EVM por endereço/assinaturas (ajuste para o seu Bridge)
+    contracts:
+      - address: "0x0000000000000000000000000000000000000000"  # TODO: ajuste
+        topics:
+          - "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"  # Transfer(address,address,uint256)
+    confirmations_required: 2
+
   solana-testnet:
     enabled: true
-    poll_interval: 3
+    ws_endpoint_env: "SOLANA_WS_ENDPOINT"
+    http_endpoint_env: "SOLANA_HTTP_ENDPOINT"
+    poll_interval_sec: 3
+    # Assinaturas por Program ID
+    programs:
+      - "11111111111111111111111111111111"  # TODO: ajuste para seu programa
+    confirmations_required: 1
 
 job_queue:
   tick_interval: 1.0
 
 ai_sync_manager:
   snapshot_path: ".runtime/agents_state.json"
-  confirmations_required:
-    base-testnet: 2
-    solana-testnet: 1
+
+# Mapeamentos simples de tipos por origem (opcional, pode ser deixado como BRIDGE_MESSAGE)
+event_map:
+  base-testnet:
+    default_type: "BRIDGE_MESSAGE"
+  solana-testnet:
+    default_type: "AGENT_SIGNAL"
