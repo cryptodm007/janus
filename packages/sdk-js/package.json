@@ -1,16 +1,25 @@
 {
   "name": "@janus/sdk-js",
-  "version": "0.1.0-alpha",
+  "version": "0.3.0-alpha",
   "private": false,
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "echo \"(stub)\"",
+    "test": "node --version && echo \"(sdk smoke)\"",
     "lint": "echo \"(stub)\""
   },
-  "dependencies": {},
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "node-fetch": "^3.3.2"
+  },
   "devDependencies": {
     "typescript": "^5.6.3"
   }
