@@ -1,10 +1,13 @@
 ## Descrição
-Explique o que este PR faz e por quê.
+(Explique o que muda e por quê)
+
+## Tipo de mudança
+- [ ] Bugfix
+- [ ] Feature
+- [ ] Docs
+- [ ] Infra/CI
 
 ## Checklist
-- [ ] Testes passam (`pnpm -w test`)
-- [ ] Lint passa (`pnpm -w lint`)
-- [ ] Docs atualizados (se necessário)
-
-## Relacionados
-Closes #
+- [ ] Testes locais ok
+- [ ] Compatível com **TESTNET ONLY**
+- [ ] Não introduz rotas/flags de mainnet
