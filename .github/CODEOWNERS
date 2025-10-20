@@ -1,0 +1,5 @@
+# owners por área
+/contracts/ @janus-protocol/core
+/apps/gateway/ @janus-protocol/runtime
+/packages/ @janus-protocol/sdk
+/tools/ @janus-protocol/infra
