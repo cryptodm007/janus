@@ -1,0 +1,35 @@
+{
+  "info": {
+    "name": "Janus Gateway",
+    "_postman_id": "f6c16b3a-0e1f-4c6a-a111-janus-demo",
+    "description": "Coleção de chamadas para o Janus Gateway",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "POST /mcp/intent",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/mcp/intent", "host": ["{{baseUrl}}"], "path": ["mcp","intent"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\":\"request\",\n  \"id\":\"postman-{{ts}}\",\n  \"method\":\"call_tool\",\n  \"params\":{\"name\":\"swap\",\"arguments\":{\"tokenIn\":\"USDC\",\"tokenOut\":\"SOL\",\"amount\":\"100\"}},\n  \"chain\":{\"origin\":\"Base\",\"destination\":\"Solana\",\"executor\":\"0x0000000000000000000000000000000000000000\",\"signature\":\"0xSIG\",\"deadline\": {{deadline}} }\n}"
+        }
+      }
+    },
+    {
+      "name": "GET /mcp/status/:id",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/mcp/status/{{intentId}}", "host": ["{{baseUrl}}"], "path": ["mcp","status","{{intentId}}"] }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "intentId", "value": "postman-123" },
+    { "key": "ts", "value": "{{$timestamp}}" },
+    { "key": "deadline", "value": "{{ $timestamp }} + 3600" }
+  ]
+}
