@@ -1,0 +1,19 @@
+name: deploy-testnet
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install pnpm
+        run: npm i -g pnpm
+      - name: Build & Run testnet stack
+        run: |
+          docker compose -f ops/docker/compose.testnet.yml build
+          docker compose -f ops/docker/compose.testnet.yml up -d
