@@ -1,0 +1,18 @@
+{
+  "title": "Janus • Chains",
+  "panels": [
+    {
+      "type": "timeseries", "title": "Chain Head (Base)",
+      "targets": [{"expr": "janus_chain_head{chain=\"base-testnet\",unit=\"block\"}"}]
+    },
+    {
+      "type": "timeseries", "title": "Chain Head (Solana)",
+      "targets": [{"expr": "janus_chain_head{chain=\"solana-testnet\",unit=\"slot\"}"}]
+    },
+    {
+      "type": "bargauge", "title": "Eventos por Tipo (5m)",
+      "targets": [{"expr": "sum by (type) (increase(janus_events_total[5m]))"}]
+    }
+  ],
+  "schemaVersion": 39
+}
