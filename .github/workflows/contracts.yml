@@ -2,13 +2,19 @@ name: contracts
 on:
   push:
     paths:
-      - "contracts/**"
+      - "contracts/src/**.sol"
+      - "contracts/test/**.sol"
+      - "contracts/script/**.sol"
+      - "contracts/foundry.toml"
       - ".github/workflows/contracts.yml"
   pull_request:
     paths:
-      - "contracts/**"
+      - "contracts/src/**.sol"
+      - "contracts/test/**.sol"
+      - "contracts/script/**.sol"
+      - "contracts/foundry.toml"
 jobs:
-  contracts-ci:
+  foundry:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,5 +22,9 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-      - name: Build & Test (stub)
-        run: echo "TODO: forge build && forge test"
+      - name: Install deps
+        run: forge install foundry-rs/forge-std@v1.9.6 --no-commit
+      - name: Build
+        run: forge build
+      - name: Test
+        run: forge test -vv
