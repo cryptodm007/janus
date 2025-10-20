@@ -1,0 +1,26 @@
+name: packages
+on:
+  push:
+    paths:
+      - "packages/**"
+      - "!packages/**/dist/**"
+      - ".github/workflows/packages.yml"
+  pull_request:
+    paths:
+      - "packages/**"
+      - "!packages/**/dist/**"
+jobs:
+  packages-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - name: Install pnpm
+        run: npm i -g pnpm
+      - name: Install deps
+        run: pnpm i
+      - name: Build workspaces (stub)
+        run: pnpm -w build

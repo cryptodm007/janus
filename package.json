@@ -1,0 +1,17 @@
+{
+  "name": "@janus/monorepo",
+  "private": true,
+  "version": "0.1.0-alpha",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint"
+  },
+  "devDependencies": {
+    "turbo": "2.1.3"
+  }
+}

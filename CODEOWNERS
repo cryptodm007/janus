@@ -1,0 +1,4 @@
+# Defina responsáveis por área
+/contracts/ @janus-protocol/contracts-team
+/apps/gateway/ @janus-protocol/gateway-team
+/packages/ @janus-protocol/sdk-team
