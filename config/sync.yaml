@@ -1,61 +1,34 @@
-listeners:
+queue:
+  backend: "sqlite"           # "sqlite" (padrão) | "redis"
+  sqlite:
+    path: ".runtime/janus_queue.db"
+  redis:
+    url_env: "REDIS_URL"      # ex.: redis://localhost:6379/0
+  max_attempts: 5
+  tick_batch: 50              # máximo de jobs por tick
+  backoff_seconds_cap: 60     # teto do backoff exponencial
+
+locks:
+  backend: "file"             # "file" (padrão) | "redis"
+  redis:
+    url_env: "REDIS_URL"
+  ttl_seconds: 15
+
+rate_limits:
   base-testnet:
-    enabled: true
-    ws_endpoint_env: "BASE_WS_ENDPOINT"
-    http_endpoint_env: "BASE_HTTP_ENDPOINT"
-    poll_interval_sec: 2
-    confirmations_required: 2
-    # Config de decodificação ABI
-    abi_files:
-      - "abi/Bridge.json"          # caminho relativo opcional
-    contracts:
-      - address: "0x0000000000000000000000000000000000000000" # TODO: ajustar
-        topics:
-          - "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"  # Transfer
-        event_map:  # map opcional de topic0->nome do evento na ABI
-          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": "Transfer"
-
+    rps: 10                   # requisições/processos por segundo
+    burst: 20
   solana-testnet:
-    enabled: true
-    ws_endpoint_env: "SOLANA_WS_ENDPOINT"
-    http_endpoint_env: "SOLANA_HTTP_ENDPOINT"
-    poll_interval_sec: 3
-    confirmations_required: 1
-    # Layouts Borsh por program_id (exemplo)
-    borsh_layouts:
-      "11111111111111111111111111111111":
-        # Um layout simples identificado por 'event_tag' no primeiro byte
-        discriminator: "u8"   # tipo do campo discriminador
-        variants:
-          "1":                 # quando event_tag == 1
-            name: "AgentHeartbeat"
-            fields:
-              - { name: "agent_id_len", type: "u8" }
-              - { name: "agent_id", type: "bytes_len", ref: "agent_id_len" }
-          "2":
-            name: "BridgeNotice"
-            fields:
-              - { name: "amount", type: "u64" }
-              - { name: "asset_len", type: "u8" }
-              - { name: "asset", type: "bytes_len", ref: "asset_len" }
+    rps: 8
+    burst: 16
 
-job_queue:
-  tick_interval: 1.0
+backpressure:
+  high_watermark_inflight: 200
+  resume_threshold: 120
 
-ai_sync_manager:
-  snapshot_path: ".runtime/agents_state.json"
-  verify_agent_signatures: true   # se payload trouxer pubkey/sig/message
-
-telemetry:
+tracing:
   enabled: true
-  metrics_port: 9090
+  exporter: "otlp"            # "otlp" | "none"
+  otlp_endpoint_env: "OTEL_EXPORTER_OTLP_ENDPOINT"  # ex.: http://localhost:4317
+  service_name: "janus-node"
 
-health:
-  enabled: true
-  port: 8080
-
-event_map:
-  base-testnet:
-    default_type: "BRIDGE_MESSAGE"
-  solana-testnet:
-    default_type: "AGENT_SIGNAL"
