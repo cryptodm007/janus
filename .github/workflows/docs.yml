@@ -3,22 +3,27 @@ on:
   push:
     paths:
       - "apps/docs/**"
+      - "packages/mcp-spec/rfcs/**"
       - ".github/workflows/docs.yml"
-  pull_request:
-    paths:
-      - "apps/docs/**"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  docs-ci:
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: 'pnpm' }
+      - run: npm i -g pnpm
+      - run: pnpm i
+      - run: pnpm --filter @janus/docs build
+      - uses: actions/configure-pages@v4
+      - uses: actions/upload-pages-artifact@v3
         with:
-          node-version: 20
-          cache: 'pnpm'
-      - name: Install pnpm
-        run: npm i -g pnpm
-      - name: Install deps
-        run: pnpm i
-      - name: Build docs (stub)
-        run: echo "TODO: docusaurus build"
+          path: apps/docs/docs/.vitepress/dist
+      - uses: actions/deploy-pages@v4
+
