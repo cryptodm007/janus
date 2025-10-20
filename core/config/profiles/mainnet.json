@@ -1,0 +1,21 @@
+{
+  "profile": {
+    "name": "mainnet",
+    "chain_ids": { "base": "base", "solana": "mainnet-beta" }
+  },
+  "policy": {
+    "min_sig_quorum": 0.75,
+    "min_ai_score": 0.70,
+    "max_clock_skew_sec": 30
+  },
+  "observability": {
+    "log_level": "WARN",
+    "metrics_enabled": true,
+    "tracing_enabled": true
+  },
+  "bridge": {
+    "poll_interval_sec": 12,
+    "vendor": "base_solana",
+    "network_timeout_sec": 8
+  }
+}
