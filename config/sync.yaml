@@ -1,0 +1,18 @@
+# config/sync.yaml
+# Parâmetros de sincronização (ajuste conforme ambiente de dev)
+listeners:
+  base-testnet:
+    enabled: true
+    poll_interval: 2
+  solana-testnet:
+    enabled: true
+    poll_interval: 3
+
+job_queue:
+  tick_interval: 1.0
+
+ai_sync_manager:
+  snapshot_path: ".runtime/agents_state.json"
+  confirmations_required:
+    base-testnet: 2
+    solana-testnet: 1
