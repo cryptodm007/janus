@@ -1,19 +1,17 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import "../src/Registry.sol";
 import "../src/Executor.sol";
+import "../src/Registry.sol";
 
 contract Deploy is Script {
     function run() external {
-        uint256 pk = vm.envUint("PRIVATE_KEY");
-        vm.startBroadcast(pk);
-        Registry reg = new Registry();
-        Executor exe = new Executor(reg);
+        vm.startBroadcast();
+        Executor executor = new Executor();
+        Registry registry = new Registry(address(executor));
+        executor.transferOwnership(msg.sender);
+        registry.transferOwnership(msg.sender);
         vm.stopBroadcast();
-
-        console2.log("Registry:", address(reg));
-        console2.log("Executor:", address(exe));
     }
 }
