@@ -10,7 +10,7 @@ on:
       - "packages/**"
       - "!packages/**/dist/**"
 jobs:
-  packages-ci:
+  build-packages:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,5 +22,8 @@ jobs:
         run: npm i -g pnpm
       - name: Install deps
         run: pnpm i
-      - name: Build workspaces (stub)
-        run: pnpm -w build
+      - name: Build spec
+        run: echo "spec is pure files"
+      - name: Build sdk
+        run: pnpm --filter @janus/sdk-js build
+
