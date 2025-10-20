@@ -1,3 +1,5 @@
+import morgan from 'morgan';
+import client from 'prom-client';
 import express from 'express';
 import * as dotenv from 'dotenv';
 import { logger } from './logger';
