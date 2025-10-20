@@ -1,18 +1,9 @@
 ---
 name: Bug report
-about: Reportar um problema
-labels: bug
+about: Relate um problema
 ---
 
-**Descreva o bug**
-...
-
-**Como reproduzir**
-1. Passo a passo
-2. ...
-
-**Comportamento esperado**
-...
-
-**Logs/prints**
-...
+## Comportamento atual
+## Passos para reproduzir
+## Logs/erros
+## Ambiente (TESTNET)
