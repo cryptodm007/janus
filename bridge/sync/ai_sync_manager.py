@@ -1,32 +1,53 @@
 # janus/bridge/sync/ai_sync_manager.py
-import asyncio
-from typing import Dict, Any
 
-from bridge.vendor.bridge_base_solana import BaseSolanaBridge
+import asyncio
+from typing import Dict, Any, List, Optional
+
+# Vendor (submódulo existente em vendor/)
+from vendor.bridge_base_solana import BaseSolanaBridge
+
 from bridge.sync.relay_proof import RelayProof
 from bridge.validation.ai_validator import AIValidator
 from bridge.validation.schemas import RelayEvent, Signature
+
 from core.state_manager import StateManager
 from core.policy_engine import PolicyEngine
 from core.reputation import ReputationManager
 
+# Fase 11 - Observability & Telemetry
+from core.observability import logger
+from core.observability.metrics import metrics, REQS_TOTAL, STATE_TS
+from core.observability.middleware import ainstrumented
+from core.observability.tracing import span
+
+# Fase 14 - Access Control
+from core.security.models import Principal
+from core.security.authz import Authorizer, arequire
+from core.security.acl import ACL
+from core.security.policy_bindings import DEFAULT_ROLES
+
 class AISyncManager:
     """
     Orquestra o ciclo:
-      1) colhe estados/eventos (Base/Solana)
-      2) valida PoR (assinaturas/quorum)
-      3) pontua IA (heurísticas/modelo)
-      4) aplica política (PolicyEngine)
-      5) atualiza estado + reputação
+      1) coleta estados/eventos (Base/Solana) via vendor
+      2) valida PoR (quorum de assinaturas)
+      3) IA: scoring heurístico
+      4) políticas de decisão
+      5) atualização de estado + reputação
+    Com Fase 14: checagem de permissões para 'relay:validate' e 'state:update'.
     """
 
-    def __init__(self,
-                 bridge: BaseSolanaBridge,
-                 state_manager: StateManager,
-                 relay_proof: RelayProof | None = None,
-                 ai_validator: AIValidator | None = None,
-                 policy: PolicyEngine | None = None,
-                 reputation: ReputationManager | None = None):
+    def __init__(
+        self,
+        bridge: BaseSolanaBridge,
+        state_manager: StateManager,
+        relay_proof: Optional[RelayProof] = None,
+        ai_validator: Optional[AIValidator] = None,
+        policy: Optional[PolicyEngine] = None,
+        reputation: Optional[ReputationManager] = None,
+        authorizer: Optional[Authorizer] = None,
+        principal: Optional[Principal] = None,
+    ):
         self.bridge = bridge
         self.state_manager = state_manager
         self.relay_proof = relay_proof or RelayProof()
@@ -34,51 +55,81 @@ class AISyncManager:
         self.policy = policy or PolicyEngine()
         self.reputation = reputation or ReputationManager()
 
+        # Segurança
+        self.authorizer = authorizer or Authorizer(ACL(DEFAULT_ROLES))
+        # Principal padrão: "relay-1" com role de relay-node (se não vier de fora)
+        self.principal = principal or Principal(principal_id="relay-1", roles={"relay-node"})
+
     async def _fetch_event(self) -> Dict[str, Any]:
         """
         Obtém um 'evento' sintetizado a partir do estado das redes.
-        Em produção, substitua por eventos reais do bridge vendor.
+        Em produção, substitua por eventos reais provenientes do relay (vendor).
         """
-        base_state = await self.bridge.get_base_state()
-        sol_state = await self.bridge.get_solana_state()
-        # Escolhe o mais recente como 'evento' base
-        ev = base_state if base_state["timestamp"] >= sol_state["timestamp"] else sol_state
-        # Assinaturas simuladas – troque por reais vindas do relay
-        signatures = [ {"node_id": "nodeA", "valid": True, "meta": {}},
-                       {"node_id": "nodeB", "valid": True, "meta": {}},
-                       {"node_id": "nodeC", "valid": False, "meta": {}} ]
+        with span("fetch_event"):
+            base_state = await self.bridge.get_base_state()
+            sol_state = await self.bridge.get_solana_state()
+
+        # Escolhe o mais recente como base do evento
+        ev = base_state if base_state.get("timestamp", 0) >= sol_state.get("timestamp", 0) else sol_state
+
+        # Assinaturas simuladas — em produção, receba do relay
+        signatures = [
+            {"node_id": "nodeA", "valid": True, "meta": {}},
+            {"node_id": "nodeB", "valid": True, "meta": {}},
+            {"node_id": "nodeC", "valid": False, "meta": {}},
+        ]
         ev["signatures"] = signatures
+
+        # Campos essenciais
+        ev.setdefault("block_hash", ev.get("block_hash", ""))
+        ev.setdefault("payload", ev.get("payload", {}))
+        ev["timestamp"] = int(ev.get("timestamp", 0))
+
+        logger.debug("event_fetched", ctx={"trace": "ai_sync"}, chosen="base" if ev is base_state else "solana",
+                     ts=ev["timestamp"], block_hash=ev.get("block_hash", ""))
         return ev
 
     def _to_relay_event(self, ev: Dict[str, Any]) -> RelayEvent:
-        sigs = [Signature(node_id=s["node_id"], valid=s["valid"], meta=s.get("meta", {}))
-                for s in ev.get("signatures", [])]
+        sigs: List[Signature] = [
+            Signature(node_id=s["node_id"], valid=bool(s["valid"]), meta=s.get("meta", {}))
+            for s in ev.get("signatures", [])
+        ]
         return RelayEvent(
-            block_hash=ev.get("block_hash", ""),
-            payload=ev.get("payload", {}),
-            timestamp=int(ev["timestamp"]),
-            signatures=sigs
+            block_hash=str(ev.get("block_hash", "")),
+            payload=dict(ev.get("payload", {})),
+            timestamp=int(ev.get("timestamp", 0)),
+            signatures=sigs,
         )
 
-    async def loop(self, interval_sec: int = 10):
+    @ainstrumented("ai_sync.loop")
+    @arequire(authorizer=Authorizer(), scope="relay:validate")  # precisa validar eventos do relay
+    async def loop(self, interval_sec: int = 10, *, principal: Optional[Principal]=None):
+        """
+        Loop principal com enforcement de 'relay:validate' no método.
+        Para aceitar estado, será exigido também 'state:update' antes da escrita.
+        """
+        principal = principal or self.principal
+
         while True:
             try:
+                REQS_TOTAL.inc(1)
+
                 raw_ev = await self._fetch_event()
                 relay_ev = self._to_relay_event(raw_ev)
 
-                # 1) PoR (quorum por assinaturas válidas)
+                # 1) PoR - quorum de assinaturas válidas (proxy: fração)
                 total = len(relay_ev.signatures) or 1
                 valid = sum(1 for s in relay_ev.signatures if s.valid)
                 sig_fraction = valid / total
 
-                # 2) IA (score heurístico/ML-ready)
+                # 2) IA - score heurístico
                 ai_metrics = self.ai.score(relay_ev)
 
-                # 3) Reputação (média dos nós que assinaram)
+                # 3) Reputação - média dos signatários
                 signer_ids = [s.node_id for s in relay_ev.signatures]
                 rep_ok = self.reputation.majority_ok(signer_ids)
 
-                # 4) Políticas
+                # 4) Políticas - decisão final
                 decision = self.policy.decide({
                     "sig_fraction": sig_fraction,
                     "ai_score": ai_metrics["ai_score"],
@@ -87,25 +138,50 @@ class AISyncManager:
                 })
 
                 if decision["accepted"]:
-                    # Atualiza estado global
-                    self.state_manager.update_state({
+                    # Antes de atualizar estado, exige 'state:update'
+                    self.authorizer.check(principal, "state:update")
+
+                    new_state = {
                         "timestamp": relay_ev.timestamp,
                         "block_hash": relay_ev.block_hash,
                         "payload": relay_ev.payload,
                         "ai": ai_metrics,
                         "sig_fraction": sig_fraction,
-                        "accepted": True
-                    })
-                    # Ajusta reputação (reforço positivo para quem assinou válido)
+                        "accepted": True,
+                    }
+                    self.state_manager.update_state(new_state)
+                    STATE_TS.set(relay_ev.timestamp)
+
+                    # Reforço reputacional
                     for s in relay_ev.signatures:
                         (self.reputation.boost if s.valid else self.reputation.penalize)(s.node_id)
+
+                    logger.info(
+                        "state_accepted",
+                        ctx={"trace": "ai_sync"},
+                        block_hash=relay_ev.block_hash,
+                        ai_score=ai_metrics["ai_score"],
+                        sig_fraction=sig_fraction,
+                        reputation_ok=rep_ok,
+                        principal=principal.principal_id,
+                    )
                 else:
-                    # Penaliza todos que assinaram o evento rejeitado
+                    # Penaliza todos signatários quando rejeitado
                     for s in relay_ev.signatures:
                         self.reputation.penalize(s.node_id)
+
+                    logger.warn(
+                        "state_rejected",
+                        ctx={"trace": "ai_sync"},
+                        reasons=decision["reasons"],
+                        ai_score=ai_metrics["ai_score"],
+                        sig_fraction=sig_fraction,
+                        reputation_ok=rep_ok,
+                        principal=principal.principal_id,
+                    )
 
                 await asyncio.sleep(interval_sec)
 
             except Exception as e:
-                print(f"[AI_SYNC ERROR] {e}")
+                logger.error("ai_sync_error", ctx={"trace": "ai_sync"}, exc=e)
                 await asyncio.sleep(5)
