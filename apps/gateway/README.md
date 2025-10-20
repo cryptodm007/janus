@@ -1,9 +1,25 @@
-# Janus Gateway (skeleton)
+# Janus Gateway — Fase 2
 
-Gateway HTTP para traduzir MCP → MCP‑Janus e enviar intenções via ponte Base–Solana.
-**Esta é apenas a estrutura inicial (Fase 0).**
+API HTTP para traduzir mensagens **MCP → MCP-Janus**, validar,
+e enviar para execução via **ponte Base–Solana**.
 
-Próximos passos (Fase 2):
-- endpoints `POST /mcp/intent`, `POST /mcp/callback`
-- driver `adapters/base-solana` integrado
-- observabilidade e retries
+**Nesta fase**:
+- Endpoint `POST /mcp/intent`
+- `GET /healthz` e `GET /metrics` (placeholder)
+- Integração com `@janus/adapter-base-solana` (stub)
+- Carrega configuração via `.env`
+
+## Rodar localmente
+```bash
+pnpm i
+pnpm --filter @janus/gateway dev
+```
+ou
+```bash
+cd apps/gateway
+pnpm i
+pnpm dev
+```
+
+## Variáveis de ambiente (.env)
+Veja `apps/gateway/.env.example` e crie `apps/gateway/.env` com valores reais no seu ambiente.
