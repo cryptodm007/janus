@@ -1,0 +1,44 @@
+name: security-contracts
+on:
+  push:
+    paths:
+      - "contracts/**"
+      - ".github/workflows/security.yml"
+  pull_request:
+    paths:
+      - "contracts/**"
+
+jobs:
+  slither:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with: { version: nightly }
+      - name: Install deps
+        run: |
+          cd contracts
+          forge install foundry-rs/forge-std@v1.9.6 --no-commit
+      - name: Run Slither
+        uses: crytic/slither-action@v0.3.4
+        with:
+          target: ./contracts
+          slither-args: --filter-paths "lib|out|test"
+
+  mythril:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with: { version: nightly }
+      - name: Build bytecode
+        run: |
+          cd contracts && forge build
+      - name: Mythril analyze (Executor)
+        uses: mythril/mythril-action@v0.2.0
+        with:
+          solc: none
+          bytecode: contracts/out/Executor.sol/Executor.json
+        continue-on-error: true
