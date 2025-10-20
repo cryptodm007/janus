@@ -1,4 +1,3 @@
-# janus/bridge/sync/relay_proof.py
 import hashlib
 import time
 
@@ -10,7 +9,7 @@ class RelayProof:
         self.validators[node_id] = public_key
 
     def verify_block(self, block_hash, signatures):
-        # mínimo de ⅔ dos validadores devem assinar (placeholder de verificação)
+        # mínimo de ⅔ dos validadores devem assinar (simulação)
         required = (len(self.validators) * 2) // 3
         valid = sum(sig.get("valid", False) for sig in signatures)
         return valid >= required
