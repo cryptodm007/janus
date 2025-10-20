@@ -1,0 +1,24 @@
+{
+  "title": "Janus • Overview",
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "stat", "title": "Jobs Processados",
+      "targets": [{"expr": "sum(increase(janus_jobs_processed_total[5m]))"}]
+    },
+    {
+      "type": "stat", "title": "Jobs Falhados",
+      "targets": [{"expr": "sum(increase(janus_jobs_failed_total[5m]))"}]
+    },
+    {
+      "type": "gauge", "title": "Prontidão",
+      "targets": [{"expr": "janus_ready"}],
+      "fieldConfig": {"max": 1, "min": 0}
+    },
+    {
+      "type": "timeseries", "title": "Latência apply_event (p95)",
+      "targets": [{"expr": "histogram_quantile(0.95, sum(rate(janus_apply_event_seconds_bucket[5m])) by (le))"}]
+    }
+  ],
+  "schemaVersion": 39
+}
