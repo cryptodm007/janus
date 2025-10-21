@@ -1,0 +1,2 @@
+[workspace]
+members = ["programs/janus_bridge_adapter"]
