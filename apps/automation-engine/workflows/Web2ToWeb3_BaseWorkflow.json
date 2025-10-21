@@ -1,0 +1,42 @@
+{
+  "name": "Web2ToWeb3 - Base (EVM) Transfer",
+  "nodes": [
+    {
+      "parameters": { "path": "janus/webhook", "responseMode": "onReceived" },
+      "id": "webhook_start",
+      "name": "HTTP Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "network": "base-sepolia",
+        "to": "0x0000000000000000000000000000000000000000",
+        "valueEth": "0.0001",
+        "data": "0x"
+      },
+      "id": "builder",
+      "name": "Base Transaction Builder",
+      "type": "@janus/automation-nodes.baseTransactionBuilder",
+      "typeVersion": 1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "network": "base-sepolia",
+        "pkEnv": true,
+        "tx": "={{$json[\"tx\"] || $json}}"
+      },
+      "id": "executor",
+      "name": "Base Transaction Executor",
+      "type": "@janus/automation-nodes.baseTransactionExecutor",
+      "typeVersion": 1,
+      "position": [800, 300]
+    }
+  ],
+  "connections": {
+    "HTTP Webhook": { "main": [{ "node": "Base Transaction Builder", "type": "main", "index": 0 }] },
+    "Base Transaction Builder": { "main": [{ "node": "Base Transaction Executor", "type": "main", "index": 0 }] }
+  }
+}
