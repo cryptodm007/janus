@@ -1,0 +1,16 @@
+[features]
+seeds = true
+skip-lint = true
+
+[programs.localnet]
+janus_bridge_adapter = "Janu5BridGeAdApTer111111111111111111111111111"
+
+[registry]
+url = "https://api.apr.dev"  # ajuste conforme ambiente
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+deploy = "anchor build && anchor deploy"
