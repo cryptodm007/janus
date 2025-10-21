@@ -28,14 +28,67 @@
   "n8n": {
     "credentials": [],
     "nodes": [
+      // === Núcleo Base/Solana ===
+      "dist/nodes/BaseTransactionBuilder.node.js",
+      "dist/nodes/BaseTransactionExecutor.node.js",
+      "dist/nodes/SolanaTransactionBuilder.node.js",
+      "dist/nodes/SolanaTransactionExecutor.node.js",
+      "dist/nodes/OnChainEventTrigger.node.js",
+
+      // === Provedores Web3 genéricos ===
+      "dist/nodes/ProviderContractDeploy.node.js",
+      "dist/nodes/ProviderContractWrite.node.js",
+      "dist/nodes/ProviderEventSource.node.js",
+      "dist/nodes/ProviderIpfsUpload.node.js",
+
+      // === Integrações de Webhooks ===
+      "dist/nodes/WebhookOut.node.js",
+      "dist/nodes/WebhookSigner.node.js",
+      "dist/nodes/WebhookVerify.node.js",
+
+      // === Integrações Zapier ===
+      "dist/nodes/ZapierCatchHookOut.node.js",
+      "dist/nodes/ZapierREST.node.js",
+
+      // === Discord ===
+      "dist/nodes/DiscordMessageOut.node.js",
+      "dist/nodes/DiscordWebhookOut.node.js",
+
+      // === Airtable ===
+      "dist/nodes/AirtableFind.node.js",
+      "dist/nodes/AirtableUpsert.node.js",
+
+      // === Slack ===
       "dist/nodes/SlackMessageOut.node.js",
       "dist/nodes/SlackWebhookOut.node.js",
+
+      // === Telegram ===
       "dist/nodes/TelegramMessageOut.node.js",
+
+      // === Notion ===
       "dist/nodes/NotionCreatePage.node.js",
+
+      // === GitHub ===
       "dist/nodes/GitHubIssueCreate.node.js",
-      "dist/nodes/TwilioMessageOut.node.js",      
+
+      // === Twilio ===
+      "dist/nodes/TwilioMessageOut.node.js",
+
+      // === Google Drive & Sheets ===
+      "dist/nodes/DriveCreateFolder.node.js",
+      "dist/nodes/DriveUploadFile.node.js",
+      "dist/nodes/SheetsAppend.node.js",
+      "dist/nodes/SheetsRead.node.js",
+
+      // === AWS S3 ===
+      "dist/nodes/S3PutObject.node.js",
+
+      // === Stripe ===
+      "dist/nodes/StripeCreateCheckoutSession.node.js",
+      "dist/nodes/StripeCreatePaymentIntent.node.js"
     ]
   }
 }
+
 
 
