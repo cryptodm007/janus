@@ -36,7 +36,17 @@
       "dist/nodes/ProviderContractDeploy.node.js",
       "dist/nodes/ProviderContractWrite.node.js",
       "dist/nodes/ProviderEventSource.node.js",
-      "dist/nodes/ProviderIpfsUpload.node.js"
+      "dist/nodes/ProviderIpfsUpload.node.js",
+      "dist/nodes/WebhookOut.node.js",
+      "dist/nodes/WebhookSigner.node.js",
+      "dist/nodes/WebhookVerify.node.js",
+      "dist/nodes/ZapierCatchHookOut.node.js",
+      "dist/nodes/ZapierREST.node.js",
+      "dist/nodes/DiscordMessageOut.node.js",
+      "dist/nodes/DiscordWebhookOut.node.js",
+      "dist/nodes/AirtableFind.node.js",
+      "dist/nodes/AirtableUpsert.node.js"
     ]
   }
 }
+
