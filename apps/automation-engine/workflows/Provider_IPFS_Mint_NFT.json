@@ -1,0 +1,47 @@
+{
+  "name": "Web3 API - IPFS Upload + Mint NFT",
+  "nodes": [
+    {
+      "parameters": { "path": "janus/provider/nft", "responseMode": "lastNode" },
+      "id": "webhook",
+      "name": "HTTP Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 280]
+    },
+    {
+      "parameters": {
+        "endpointPath": "v3/ipfs/file",
+        "filename": "metadata.json",
+        "contentBase64": "={{$json.contentBase64}}",
+        "extraBody": "{}"
+      },
+      "id": "ipfs",
+      "name": "Web3 API - IPFS Upload",
+      "type": "@janus/automation-nodes.providerIpfsUpload",
+      "typeVersion": 1,
+      "position": [500, 280]
+    },
+    {
+      "parameters": {
+        "endpointPath": "v3/transaction/contract/execute",
+        "network": "base-sepolia",
+        "contractAddress": "={{$json.contractAddress}}",
+        "abi": "={{$json.abi}}",
+        "functionName": "mint",
+        "args": "={{[$json.to, $json.amount, $json.tokenURI || $item(0).$node[\"Web3 API - IPFS Upload\"].json.response.cid]}}",
+        "valueEth": "0",
+        "extraBody": "{}"
+      },
+      "id": "mint",
+      "name": "Web3 API - Contract Write (mint)",
+      "type": "@janus/automation-nodes.providerContractWrite",
+      "typeVersion": 1,
+      "position": [840, 280]
+    }
+  ],
+  "connections": {
+    "HTTP Webhook": { "main": [{ "node": "Web3 API - IPFS Upload", "type": "main", "index": 0 }] },
+    "Web3 API - IPFS Upload": { "main": [{ "node": "Web3 API - Contract Write (mint)", "type": "main", "index": 0 }] }
+  }
+}
