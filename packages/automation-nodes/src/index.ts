@@ -7,3 +7,7 @@ export * from './nodes/ProviderContractDeploy.node';
 export * from './nodes/ProviderContractWrite.node';
 export * from './nodes/ProviderEventSource.node';
 export * from './nodes/ProviderIpfsUpload.node';
+export * from './nodes/DiscordMessageOut.node';
+export * from './nodes/DiscordWebhookOut.node';
+export * from './nodes/AirtableFind.node';
+export * from './nodes/AirtableUpsert.node';
