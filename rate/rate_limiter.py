@@ -21,13 +21,20 @@ class TokenBucket:
         return False
 
 class RateLimiter:
+    """
+    RateLimiter controla a taxa de eventos permitidos por chave.
+    Configurada por `rate_limits` no `sync.yaml`, usando key = "{chain}:{type}".
+    """
     def __init__(self, config: Dict[str, Dict[str, float]]):
         self.buckets: Dict[str, TokenBucket] = {}
         for key, spec in (config or {}).items():
-            self.buckets[key] = TokenBucket(spec.get("rps", 10), spec.get("burst", 20))
+            rps   = float(spec.get("rps", 0.0))
+            burst = int(spec.get("burst", 0))
+            self.buckets[key] = TokenBucket(rps, burst)
 
     def allow(self, key: str) -> bool:
-        b = self.buckets.get(key)
-        if not b:
+        bucket = self.buckets.get(key)
+        if not bucket:
+            # Se não há configuração de limite para a key, permitir livremente
             return True
-        return b.allow()
+        return bucket.allow()
