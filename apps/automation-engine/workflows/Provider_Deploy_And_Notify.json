@@ -1,0 +1,52 @@
+{
+  "name": "Web3 API - Deploy And Notify",
+  "nodes": [
+    {
+      "parameters": { "path": "janus/provider/deploy", "responseMode": "lastNode", "options": {} },
+      "id": "webhook",
+      "name": "HTTP Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "endpointPath": "v3/smart-contract/from-bytecode",
+        "network": "base-sepolia",
+        "contractName": "MyToken",
+        "abi": "={{$json.abi}}",
+        "bytecode": "={{$json.bytecode}}",
+        "constructorArgs": "={{$json.constructorArgs || []}}",
+        "from": "",
+        "extraBody": "{}"
+      },
+      "id": "deploy",
+      "name": "Web3 API - Contract Deploy",
+      "type": "@janus/automation-nodes.providerContractDeploy",
+      "typeVersion": 1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://httpbin.org/post",
+        "jsonParameters": true,
+        "sendBinaryData": false,
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "event", "value": "contract_deployed" },
+            { "name": "data", "value": "={{$json[\"response\"]}}" }
+          ]
+        }
+      },
+      "id": "notify",
+      "name": "Notify (HTTP POST)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [820, 300]
+    }
+  ],
+  "connections": {
+    "HTTP Webhook": { "main": [{ "node": "Web3 API - Contract Deploy", "type": "main", "index": 0 }] },
+    "Web3 API - Contract Deploy": { "main": [{ "node": "Notify (HTTP POST)", "type": "main", "index": 0 }] }
+  }
+}
