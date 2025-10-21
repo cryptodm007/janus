@@ -1,0 +1,38 @@
+{
+  "name": "@janus/automation-nodes",
+  "version": "0.1.0",
+  "description": "Janus Protocol - n8n custom nodes to bridge Web2 workflows with Web3 (Base EVM + Solana)",
+  "author": "Janus Protocol",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "ethers": "^6.13.2",
+    "@solana/web3.js": "^1.95.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "eslint": "^9.10.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.4.5"
+  },
+  "n8n": {
+    "credentials": [],
+    "nodes": [
+      "dist/nodes/BaseTransactionBuilder.node.js",
+      "dist/nodes/BaseTransactionExecutor.node.js",
+      "dist/nodes/SolanaTransactionBuilder.node.js",
+      "dist/nodes/SolanaTransactionExecutor.node.js",
+      "dist/nodes/OnChainEventTrigger.node.js"
+    ]
+  }
+}
