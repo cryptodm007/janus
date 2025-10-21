@@ -1,45 +1,33 @@
-# Janus Protocol Monorepo
+# Janus Protocol
 
-**Version:** v0.1.0-alpha • **Date:** 2025-10-20
+## Visão Geral  
+O Janus Protocol é uma arquitetura de sincronização e confirmação cross-chain de eventos entre cadeias EVM-like e Solana.  
+O fluxo básico é:
 
-Janus é um **monorepo** para o Protocolo Janus (MCP verificável on-chain) rodando sobre a ponte **Base–Solana** (testnets: Base Sepolia ↔ Solana Devnet).
+1. **Listeners** (Base / Solana) escutam logs ou slots e emitem eventos `CHAIN_HEAD` e `BRIDGE_MESSAGE` / `AGENT_SIGNAL`.  
+2. Um **Router** normaliza e encaminha eventos para a **Fila Persistente**.  
+3. A **Job Queue** aplica **rate limiting**, **backpressure**, e persiste jobs (SQLite ou Redis).  
+4. O **AISyncManager** lê eventos, aplica transformação/estado (agents, transfers, bridge messages) e confirma com base em finality (head-based).  
+5. Infraestrutura de **telemetria**, **tracing**, **locks distribuídos**, **backfill histórico**, e **Admin API** suportam operação confiável.
 
-> Fase 0 — _Bootstrap do repositório_: estrutura de pastas, governança de contribuição, CI básico e esqueleto de pacotes/apps.
+## Estrutura de Pastas  
+- `core/` — esquemas, interfaces, state store, locks fallback.  
+- `bridge/` — providers, listeners, decoders, historical scanner.  
+- `services/` — queue manager, sync manager, job orchestration.  
+- `storage/` — backends de fila (SQLite, Redis).  
+- `locks/` — factory de locks, redis fencing lock.  
+- `rate/` — rate limiter e backpressure.  
+- `resilience/` — circuit breaker, adaptive polling.  
+- `replay/` — serviços de replay histórico e endpoints admin.  
+- `telemetry/` — métricas Prometheus, tracing setup.  
+- `config/` — arquivo `sync.yaml`, `.env` exemplo.  
+- `tests/` — unit e integration tests.  
+- `bootstrap_sync.py` — script de bootstrap.  
+- `CHANGELOG.md`, `pyproject.toml`, `README.md`.
 
-## Requisitos
-- Node.js ≥ 20, pnpm ≥ 9 (`npm i -g pnpm`)
-- Git ≥ 2.40
-- (Opcional) Docker ≥ 24
-- (Opcional) Foundry para contratos (`curl -L https://foundry.paradigm.xyz | bash`)
-
-## Setup rápido
+## Instalação Rápida  
 ```bash
-pnpm i
-pnpm -w build
-```
-
-## Workspaces
-- `apps/` — serviços (gateway, docs)
-- `packages/` — SDKs, spec, adapters, shared
-- `contracts/` — Executor/Registry (Base Sepolia)
-- `examples/` — exemplos ponta-a-ponta
-- `ops/` — ambientes/devops
-- `vendor/` — dependências externas como submódulos (ponte Base–Solana)
-
-## Submódulo (ponte Base–Solana)
-> Este repositório **não** traz o submódulo inicializado por padrão dentro do ZIP.
-Para adicionar manualmente:
-```bash
-git submodule add https://github.com/cryptodm007/Bridge-Base-Solana vendor/bridge-base-solana
-git submodule update --init --recursive
-```
-
-## Branching & Releases
-- `main` — estável
-- `dev` — integração
-- `feat/*`, `fix/*`, `docs/*`, `rfc/*`
-
-Releases seguem **semver**. Primeira tag: `v0.1.0-alpha`.
-
-## Licença
-Apache-2.0
+git clone https://github.com/janus-protocol/janus.git  
+cd janus  
+pip install -r requirements.txt  
+cp .env.example .env   # configurar BASE_WS_ENDPOINT, SOLANA_WS_ENDPOINT, REDIS_URL, JANUS_ADMIN_TOKEN  
