@@ -1,22 +1,93 @@
+# config/sync.yaml
+# Configuração do Janus Protocol — ajuste conforme seu ambiente de dev/test/prod.
+
+listeners:
+  base-testnet:
+    enabled: true
+    ws_endpoint_env: "BASE_WS_ENDPOINT"
+    http_endpoint_env: "BASE_HTTP_ENDPOINT"
+    confirmations_required: 2
+    poll_interval_sec: 2.0
+    min_poll_sec: 0.5
+    max_poll_sec: 5.0
+    gap_scan:
+      batch_blocks: 500
+      max_backfill: 20000
+    historical_scan:
+      enabled: true
+      page_blocks: 2000
+      max_parallel: 1
+      start_from: "auto"
+      margin_confirmations: 256
+    circuit_breaker:
+      window_errors: 5
+      reset_after_sec: 20
+    checkpoints:
+      key_scan: "cp:base:scan_block"
+      per_contract_prefix: "cp:base:contract:"
+    abi_files:
+      - "abi/Bridge.json"
+    contracts:
+      - address: "0x0000000000000000000000000000000000000000"  # ajuste para seu contrato
+        topics:
+          - "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"  # Transfer event
+        event_map:
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": "Transfer"
+
+  solana-testnet:
+    enabled: true
+    ws_endpoint_env: "SOLANA_WS_ENDPOINT"
+    http_endpoint_env: "SOLANA_HTTP_ENDPOINT"
+    confirmations_required: 1
+    poll_interval_sec: 3.0
+    min_poll_sec: 0.5
+    max_poll_sec: 6.0
+    gap_scan:
+      batch_slots: 2000
+      max_backfill: 50000
+    circuit_breaker:
+      window_errors: 5
+      reset_after_sec: 20
+    checkpoints:
+      key_scan: "cp:sol:scan_slot"
+    programs:
+      - "11111111111111111111111111111111"  # ajuste para seu programa
+    borsh_layouts:
+      "11111111111111111111111111111111":
+        discriminator: "u8"
+        variants:
+          "1":
+            name: "AgentHeartbeat"
+            fields:
+              - { name: "agent_id_len", type: "u8" }
+              - { name: "agent_id", type: "bytes_len", ref: "agent_id_len" }
+          "2":
+            name: "BridgeNotice"
+            fields:
+              - { name: "amount", type: "u64" }
+              - { name: "asset_len", type: "u8" }
+              - { name: "asset", type: "bytes_len", ref: "asset_len" }
+
 queue:
-  backend: "sqlite"           # "sqlite" (padrão) | "redis"
+  backend: "sqlite"                 # "sqlite" | "redis"
   sqlite:
     path: ".runtime/janus_queue.db"
   redis:
-    url_env: "REDIS_URL"      # ex.: redis://localhost:6379/0
+    url_env: "REDIS_URL"
   max_attempts: 5
-  tick_batch: 50              # máximo de jobs por tick
-  backoff_seconds_cap: 60     # teto do backoff exponencial
+  tick_batch: 50
+  backoff_seconds_cap: 60
 
 locks:
-  backend: "file"             # "file" (padrão) | "redis"
+  backend: "file"                   # "file" | "redis"
+  ttl_seconds: 15
   redis:
     url_env: "REDIS_URL"
-  ttl_seconds: 15
+    namespace: "janus"
 
 rate_limits:
   base-testnet:
-    rps: 10                   # requisições/processos por segundo
+    rps: 10
     burst: 20
   solana-testnet:
     rps: 8
@@ -26,9 +97,32 @@ backpressure:
   high_watermark_inflight: 200
   resume_threshold: 120
 
+replay:
+  enabled: true
+  max_span:
+    base-testnet: 5000
+    solana-testnet: 10000
+
+admin:
+  enabled: true
+  port: 8080
+  token_env: "JANUS_ADMIN_TOKEN"
+
+telemetry:
+  enabled: true
+  metrics_port: 9090
+  gauges:
+    checkpoint_base_enabled: true
+    checkpoint_solana_enabled: true
+    per_contract_checkpoints: true
+
 tracing:
   enabled: true
-  exporter: "otlp"            # "otlp" | "none"
-  otlp_endpoint_env: "OTEL_EXPORTER_OTLP_ENDPOINT"  # ex.: http://localhost:4317
+  exporter: "otlp"
+  otlp_endpoint_env: "OTEL_EXPORTER_OTLP_ENDPOINT"
   service_name: "janus-node"
+  sampling_ratio: 1.0
+  attributes:
+    env: "dev"
+    component: "janus-protocol"
 
