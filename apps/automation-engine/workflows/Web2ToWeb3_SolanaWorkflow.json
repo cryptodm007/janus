@@ -1,0 +1,42 @@
+{
+  "name": "Web2ToWeb3 - Solana Transfer",
+  "nodes": [
+    {
+      "parameters": { "path": "janus/solana/webhook", "responseMode": "onReceived" },
+      "id": "webhook_start",
+      "name": "HTTP Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "network": "solana-devnet",
+        "fromPubkey": "REPLACE_WITH_FROM_PUBLIC_KEY",
+        "toPubkey": "REPLACE_WITH_TO_PUBLIC_KEY",
+        "lamports": 10000
+      },
+      "id": "builder",
+      "name": "Solana Transaction Builder",
+      "type": "@janus/automation-nodes.solanaTransactionBuilder",
+      "typeVersion": 1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "network": "solana-devnet",
+        "useEnv": true,
+        "txBase64": "={{$json[\"tx\"]}}"
+      },
+      "id": "executor",
+      "name": "Solana Transaction Executor",
+      "type": "@janus/automation-nodes.solanaTransactionExecutor",
+      "typeVersion": 1,
+      "position": [800, 300]
+    }
+  ],
+  "connections": {
+    "HTTP Webhook": { "main": [{ "node": "Solana Transaction Builder", "type": "main", "index": 0 }] },
+    "Solana Transaction Builder": { "main": [{ "node": "Solana Transaction Executor", "type": "main", "index": 0 }] }
+  }
+}
