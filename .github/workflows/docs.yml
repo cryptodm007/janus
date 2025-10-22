@@ -22,7 +22,7 @@ jobs:
       - run: pnpm i
       - run: pnpm --filter @janus/docs build
       - uses: actions/configure-pages@v4
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: apps/docs/docs/.vitepress/dist
       - uses: actions/deploy-pages@v4
