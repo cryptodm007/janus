@@ -1,10 +1,10 @@
 {
-  "title": "Janus AI Layer",
-  "panels": [
-    { "type": "stat", "title": "AI Tasks Total", "targets": [{"expr": "ai_tasks_total"}] },
-    { "type": "stat", "title": "AI Tasks Success", "targets": [{"expr": "ai_tasks_success_total"}] },
-    { "type": "stat", "title": "AI Tasks Fail", "targets": [{"expr": "ai_tasks_fail_total"}] }
-  ],
+  "title": "Janus – AI Layer & Settlement",
   "schemaVersion": 38,
-  "version": 1
+  "version": 2,
+  "panels": [
+    { "type": "stat", "title": "AI Tasks Total", "targets": [{ "expr": "ai_tasks_total" }], "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 } },
+    { "type": "stat", "title": "AI Tasks Success", "targets": [{ "expr": "ai_tasks_success_total" }], "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 } },
+    { "type": "stat", "title": "Settlement Tx", "targets": [{ "expr": "onchain_settlement_total" }], "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 } }
+  ]
 }
