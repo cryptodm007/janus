@@ -1,195 +1,197 @@
-# Janus Protocol
-
-![License](https://img.shields.io/github/license/janus-protocol/janus)
-![CI](https://github.com/janus-protocol/janus/actions/workflows/ci.yml/badge.svg)
-![Python](https://img.shields.io/badge/python-3.11%2B-blue)
-![TypeScript](https://img.shields.io/badge/typescript-monorepo-blueviolet)
-![Solana](https://img.shields.io/badge/solana-program-lightgreen)
-
-> **Sincronização e confirmação de eventos cross-chain** entre cadeias EVM-like (ex.: Base) e Solana, com confirmação por *head/finality*, *rate limiting*, *backpressure*, *telemetria* e *replay*.
+# 🧬 JANUS PROTOCOL  
+**Where Agents Think, Chains Act.**
 
 ---
 
-## Sumário
-- [Visão Geral](#visão-geral)
-- [Arquitetura](#arquitetura)
-- [Recursos](#recursos)
-- [Estrutura do Repositório](#estrutura-do-repositório)
-- [Pré-requisitos](#pré-requisitos)
-- [Configuração Rápida](#configuração-rápida)
-- [Execução](#execução)
-- [Variáveis de Ambiente](#variáveis-de-ambiente)
-- [Testes](#testes)
-- [Observabilidade](#observabilidade)
-- [Roadmap (alto nível)](#roadmap-alto-nível)
-- [Contribuindo](#contribuindo)
-- [Segurança](#segurança)
-- [Licença](#licença)
+## 🌐 Visão Geral
+
+O **Janus Protocol** é uma infraestrutura modular que conecta **IA ↔ Web2 ↔ Web3**.  
+Ele permite que agentes de inteligência artificial executem ações reais em aplicações Web2 (Google Sheets, AWS S3, Stripe etc.) e interajam diretamente com contratos inteligentes em redes como **Base** e **Solana**.
+
+> A IA cria a intenção.  
+> O Janus executa.  
+> A blockchain valida.
 
 ---
 
-## Visão Geral
-O Janus Protocol orquestra *listeners* para EVM e Solana, normaliza eventos, impõe limites de taxa e pressão, e confirma estados com base na *finality* das redes. Um *Sync Manager* aplica transformação/estado (por exemplo, *bridge messages*, *agent signals*) e persiste tudo de forma robusta. Há suporte a *telemetria*, *tracing*, *locks* distribuídos, *backfill histórico* e endpoints administrativos.
+## ⚙️ Arquitetura
 
----
-
-## Arquitetura
-
-```mermaid
-flowchart LR
-    subgraph A[EVM / Base Chain]
-        L1[Listener EVM] -->|Eventos| N[Normalizer]
-    end
-
-    subgraph B[Solana Chain]
-        L2[Listener Solana] -->|Slots| N
-    end
-
-    N --> Q[Queue Persistente]
-    Q --> RL[Rate Limiter]
-    RL --> SM[AI Sync Manager]
-    SM --> DB[(Storage: SQLite / Redis)]
-    SM --> T[Telemetry / Tracing]
-    SM --> ADM[Admin API]
-
-    ADM --> R[Replay / Backfill]
+```plaintext
+           ┌───────────────────────────────┐
+           │         IA Layer (MCP)        │
+           │  • Servidor MCP               │
+           │  • Agentes Autônomos (JNS)    │
+           │  • Economia & Staking         │
+           └──────────────┬────────────────┘
+                          │  JSON / HMAC / MCP
+           ┌──────────────▼────────────────┐
+           │         Janus Core            │
+           │  • Orquestrador de Nodes      │
+           │  • Bridge Base ↔ Solana       │
+           │  • Connectores Web2           │
+           └──────────────┬────────────────┘
+                          │  RPC / Tx / Events
+           ┌──────────────▼────────────────┐
+           │   Blockchains (Base, Solana)  │
+           │   • Contratos de Agentes      │
+           │   • Liquidação de Tarefas     │
+           └───────────────────────────────┘
 ```
 
 ---
 
-## Recursos
-- **Cross-chain EVM ↔ Solana** com confirmação por *head/finality*
-- **Fila persistente** com backends **SQLite** ou **Redis**
-- **Rate limiting & backpressure** configuráveis
-- **Reprocessamento/replay** para *backfill* histórico e recuperação
-- **Locks distribuídos** (fencing) para execução segura
-- **Observabilidade**: métricas (Prometheus), logs estruturados e *tracing*
-- **Programa Solana** para *bridge adapter*
+## 📦 Estrutura de Pastas
+
+| Diretório | Descrição |
+|------------|------------|
+| `ai/mcp/` | Servidor MCP e ferramentas usadas por agentes. |
+| `ai/registry/` | Registro de agentes e ferramentas (off-chain). |
+| `ai/mcp/agents/` | Exemplos de agentes (trade-agent, data-agent). |
+| `api/ai/` | API HTTP para receber ações cognitivas e executar nodes. |
+| `core/` | Motor central de execução e fila de tarefas. |
+| `services/bridge/` | Bridge Base ↔ Solana + integrações DEX (0x / Jupiter). |
+| `packages/connectors/` | Conectores Web2 (Google Sheets, AWS S3, Stripe). |
+| `contracts/` | Smart contracts (JNS – Registry, Staking, Rewards, Settlement). |
+| `telemetry/` | Métricas, Prometheus, Grafana dashboards. |
+| `config/` | Políticas de segurança, rate-limits, allowlists. |
+| `.github/` | Workflows de CI/CD, scans de segurança. |
 
 ---
 
-## Estrutura do Repositório
-
-```
-/api                      # API/SDKs (quando aplicável)
-/apps                     # Aplicativos/CLIs auxiliares
-/bridge                   # Providers, listeners, decoders, scanners
-/config                   # sync.yaml, .env.* exemplos
-/contracts                # Contratos EVM/Solidity
-/core                     # Esquemas, interfaces, state store
-/health                   # Healthchecks
-/locks                    # Implementações de lock (ex.: Redis fencing)
-/ops                      # Scripts/infra operacional
-/packages                 # Pacotes TS/JS reutilizáveis
-/programs/solana/bridge_adapter  # Programa Solana (Rust)
-/rate                     # Rate limiter/backpressure
-/replay                   # Serviços de replay e endpoints admin
-/resilience               # Circuit breakers e estratégias adaptativas
-/scripts                  # Scripts utilitários
-/security                 # Políticas/artefatos de segurança
-/services                 # Queue manager, sync manager, orquestração
-/storage                  # Backends de fila (SQLite, Redis)
-/telemetry                # Métricas, tracing e setup de observabilidade
-/tests/unit               # Testes unitários
-/tools                    # Ferramentas de desenvolvimento
-/vendor/bridge-base-solana# Dependências vendorizadas da ponte Base↔Solana
-README.md, LICENSE, CODE_OF_CONDUCT.md, CONTRIBUTING.md,
-package.json, pnpm-workspace.yaml, turbo.json
-```
-
----
-
-## Pré-requisitos
-- **Python 3.11+**
-- **Node.js 18+** e **pnpm**
-- **Rust & Solana CLI**
-- **Redis** (opcional)
-- **Foundry/Hardhat** (opcional)
-
----
-
-## Configuração Rápida
+## 🚀 Quick Start (Dev Env)
 
 ```bash
-git clone https://github.com/janus-protocol/janus.git
-cd janus
-
-# Python
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-
-# Node
-corepack enable
+# 1) instalar dependências
 pnpm install
+
+# 2) configurar variáveis
+cp .env.example .env
+# (editar chaves API / RPC)
+
+# 3) subir AI API + MCP Server
+pnpm --filter @janus/ai-api dev
+pnpm --filter @janus/mcp-server dev
+
+# 4) executar agente exemplo
+pnpm --filter @janus/data-agent dev
+```
+
+Endpoints principais:  
+- **AI API:** `http://localhost:7440`  
+- **MCP Server:** `http://localhost:7331`  
+- **Métricas Prometheus:** `/metrics`  
+- **Healthcheck:** `/health`
+
+---
+
+## 🤖 Camada de IA (MCP + Agentes)
+
+A **IA Layer** transforma o Janus em um **Hub cognitivo** para agentes.
+
+- **Servidor MCP** → expõe ferramentas (`janus.executeNode`, `janus.gsheets.read`, `janus.s3.put`, `janus.stripe.charge`).  
+- **Agentes** → instâncias autônomas que rodam scripts (TypeScript/Python) e executam ações via MCP.  
+- **Economia JNS** → cada agente é registrado on-chain, com stake e recompensas automáticas.
+
+**Exemplo de fluxo (Data Agent):**
+
+1. Lê uma planilha do Google Sheets  
+2. Grava JSON no AWS S3  
+3. Registra o hash on-chain  
+4. Recebe recompensa JNS via `TaskSettlement`
+
+---
+
+## 🌉 Bridge Base ↔ Solana
+
+O **Janus Bridge** é responsável por orquestrar trocas e mensagens cross-chain.  
+Atualmente implementa:
+
+- **Swaps EVM (Base)** → via [0x Swap API](https://0x.org/docs).  
+- **Swaps Solana** → via [Jupiter Aggregator](https://jup.ag).  
+- **Liquidação on-chain** → integração com contrato `TaskSettlement.sol`.
+
+---
+
+## 💾 Conectores (Web2 First-Class)
+
+| Conector | Ação | Descrição |
+|-----------|------|-----------|
+| `google/sheets` | read / append | Interage com planilhas Google. |
+| `aws/s3` | put / get | Armazena ou lê objetos S3. |
+| `stripe/payments` | charge / refund | Cria ou reverte cobranças. |
+
+Todos são **assincrônicos, com retry + timeout**, e utilizam credenciais via `.env`.
+
+---
+
+## 🧠 Economia JNS (on-chain)
+
+| Contrato | Função |
+|-----------|--------|
+| `AgentRegistry` | NFT de identidade do agente. |
+| `AgentStaking` | Stake / slashing em JNS. |
+| `AgentRewards` | Pagamentos de tarefas concluídas. |
+| `TaskSettlement` | Liquidação de tarefas e emissão de recompensas. |
+
+Deploys demo estão em Base Sepolia / Solana Devnet.
+
+---
+
+## 🔒 Segurança (Fase 5)
+
+| Controle | Implementação |
+|-----------|---------------|
+| Autenticação HMAC | Headers `x-janus-key`, `x-janus-sig`, `x-janus-ts` |
+| Anti-replay | Janela 5 min + verificação HMAC |
+| Rate-Limit | Express-Rate-Limit (600 req/min por chave) |
+| Validação | Zod Schemas + Allowlist de Nodes/Tools |
+| Circuit Breaker | Abre em ≥ 50 % falhas últimas 20 requisições |
+| Cost Cap | Máximo USD por ação (5 USD padrão) |
+| Scanners | Gitleaks + Semgrep + Dependabot (CI) |
+| Políticas | `config/policies.json` e `docs/security/*` |
+
+Logs e métricas expõem contadores:
+```
+ai_tasks_total
+ai_tasks_success_total
+onchain_settlement_total
+security_reject_total
+rate_limit_drops_total
 ```
 
 ---
 
-## Execução
+## 📊 Observabilidade
 
-```bash
-source .venv/bin/activate
-python -m services.sync_manager
-```
-
-Listeners:
-```bash
-python -m bridge.listeners.evm.head_listener
-python -m bridge.listeners.solana.slot_listener
-```
+- **Prometheus Exporter** embutido em API e MCP.  
+- **Dashboard Grafana**: `telemetry/ai/dashboards/grafana.json`.  
+- **Logs Estruturados** (JSON, UTC).  
+- **Healthcheck** → `/health`.
 
 ---
 
-## Variáveis de Ambiente
+## 🤝 Contribuindo
 
-| Variável | Descrição |
-|-----------|------------|
-| `BASE_WS_ENDPOINT` | Node WebSocket EVM/Base |
-| `SOLANA_WS_ENDPOINT` | Node WebSocket Solana |
-| `REDIS_URL` | Redis connection string |
-| `JANUS_ADMIN_TOKEN` | Token de acesso admin |
-| `TELEMETRY_PROM_PORT` | Porta do Prometheus |
-| `LOG_LEVEL` | Nível de log (INFO/DEBUG) |
+Consulte [`CONTRIBUTING.md`](./CONTRIBUTING.md).  
+Pull Requests devem seguir Conventional Commits e passar nos tests e scans.
 
 ---
 
-## Testes
+## 🧩 Ecossistema em Expansão
 
-```bash
-pytest -q
-forge test
-cargo test
-pnpm -r test
-```
-
----
-
-## Observabilidade
-- **Métricas**: Prometheus (`TELEMETRY_PROM_PORT`)
-- **Tracing**: Jaeger, OTLP
-- **Healthchecks**: `/healthz`, `/readyz`
+| Módulo | Status |
+|---------|--------|
+| **Janus MCP** | ✅ ativo |
+| **AI API** | ✅ ativo |
+| **Bridge Base ↔ Solana** | 🧪 testnet |
+| **Conectores Web2** | ✅ Sheets/S3/Stripe |
+| **Economia JNS** | 🧱 on-chain beta |
+| **Observabilidade** | ✅ Prometheus / Grafana |
+| **Hardening & Security** | ✅ Fase 5 completa |
 
 ---
 
-## Roadmap (alto nível)
-- [ ] Finality configurável por rede
-- [ ] Backfill incremental
-- [ ] Catálogo de decoders EVM/SPL
-- [ ] CLI administrativa
-- [ ] Dashboards e tracing integrados
-- [ ] Testes de resiliência multichain
+## 🪙 Licença
+MIT © Janus Protocol – Construindo a infraestrutura da Internet Cognitiva.
 
----
-
-## Contribuindo
-Consulte **CONTRIBUTING.md** e **CODE_OF_CONDUCT.md**.
-
----
-
-## Segurança
-Leia **SECURITY.md** para diretrizes de disclosure.
-
----
-
-## Licença
-Licenciado sob os termos definidos em **LICENSE**.
+> *O Janus nasceu para ser a ponte entre a lógica da IA e a confiança da blockchain.*
