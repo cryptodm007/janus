@@ -1,0 +1,13 @@
+[
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "taskId", "type": "bytes32" },
+      { "internalType": "address", "name": "agent", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "closeTask",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
