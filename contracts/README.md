@@ -30,6 +30,12 @@ Crie `.env` com:
 RPC_URL_BASE_SEPOLIA=...
 PRIVATE_KEY=0xSUA_CHAVE_DE_TESTNET
 ```
+# Contratos - Economia de Agentes
+- AgentRegistry: identidade (NFT) e metadados
+- AgentStaking: stake/slashing em JNS
+- AgentRewards: distribuição por tarefa
+- TaskSettlement: fechamento de tarefa (assinaturas)
+
 Execute:
 ```bash
 forge script script/Deploy.s.sol:Deploy --rpc-url $RPC_URL_BASE_SEPOLIA --broadcast --private-key $PRIVATE_KEY
