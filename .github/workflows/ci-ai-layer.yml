@@ -1,0 +1,19 @@
+name: CI – AI Layer
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9
+      - run: pnpm i
+      - run: pnpm --filter @janus/mcp-server build
+      - run: pnpm --filter @janus/ai-api build
+      - run: pnpm --filter @janus/contracts build
