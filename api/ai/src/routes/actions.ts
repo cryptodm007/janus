@@ -4,12 +4,14 @@ import { resolveNode } from "../nodes/registry.js";
 import { closeTaskOnChain } from "../onchain/settlement.js";
 import { randomBytes } from "crypto";
 
+
 const r = Router();
 
 r.post("/execute", async (req, res) => {
   try {
     const body = req.body as ExecuteNodeBody;
     if (!body?.node) return res.status(400).json({ error: "node is required" });
+    inc("ai_tasks_success_total");
 
     // executa node
     const fn = resolveNode(body.node);
@@ -24,6 +26,7 @@ r.post("/execute", async (req, res) => {
     let settleTx: { txHash?: string } | undefined;
     try {
       settleTx = await closeTaskOnChain({ taskIdHex, agent, amountWei });
+      if (settleTx?.txHash) { inc("onchain_settlement_total"); }
     } catch (e) {
       // Falha de liquidação não pode invalidar a resposta do node; logue e prossiga
       console.error("[SETTLEMENT] erro:", (e as Error).message);
