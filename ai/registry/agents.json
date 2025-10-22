@@ -1,0 +1,4 @@
+[
+  { "id": "trade-agent", "stakeMin": "1000 JNS", "version": "0.1.0" },
+  { "id": "data-agent", "stakeMin": "500 JNS", "version": "0.1.0" }
+]
