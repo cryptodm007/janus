@@ -4,6 +4,7 @@ import { executeNode } from "./tools/janus.executeNode.js";
 import { readSheet } from "./tools/janus.gsheets.read.js";
 import { s3PutObject } from "./tools/janus.s3.put.js";
 import { stripeCharge } from "./tools/janus.stripe.charge.js";
+import { incTask, incTaskFail, incTaskSuccess } from "../../../telemetry/ai/metrics.js";
 
 const PORT = Number(process.env.MCP_PORT || 7331);
 const SECRET = process.env.JANUS_MCP_SECRET || "dev-secret";
