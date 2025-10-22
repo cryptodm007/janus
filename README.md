@@ -184,10 +184,10 @@ Pull Requests devem seguir Conventional Commits e passar nos tests e scans.
 | **Janus MCP** | ✅ ativo |
 | **AI API** | ✅ ativo |
 | **Bridge Base ↔ Solana** | 🧪 testnet |
-| **Conectores Web2** | ✅ Sheets/S3/Stripe |
+| **Conectores Web2** | ✅ Google/N8N/AWS/Stripe |
 | **Economia JNS** | 🧱 on-chain beta |
 | **Observabilidade** | ✅ Prometheus / Grafana |
-| **Hardening & Security** | ✅ Fase 5 completa |
+
 
 ---
 
