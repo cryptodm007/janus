@@ -1,0 +1,6 @@
+[
+  { "name": "janus.executeNode", "version": "0.1.0" },
+  { "name": "janus.gsheets.read", "version": "0.1.0" },
+  { "name": "janus.s3.put", "version": "0.1.0" },
+  { "name": "janus.stripe.charge", "version": "0.1.0" }
+]
