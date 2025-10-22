@@ -1,0 +1,25 @@
+{
+  "mcp": {
+    "requestMaxBytes": 131072,
+    "replayWindowMs": 300000,
+    "rateLimitPerMin": 120,
+    "toolsAllowlist": [
+      "janus.executeNode",
+      "janus.gsheets.read",
+      "janus.s3.put",
+      "janus.stripe.charge"
+    ]
+  },
+  "api": {
+    "requestMaxBytes": 262144,
+    "rateLimitPerMin": 600,
+    "nodesAllowlist": [
+      "bridge.swap",
+      "sheets.to.s3",
+      "onchain.hashRecord"
+    ],
+    "maxCostUsdPerAction": 5.0,
+    "circuitBreakerFailRatio": 0.5,
+    "circuitBreakerWindow": 20
+  }
+}
