@@ -1,4 +1,17 @@
-# Defina responsáveis por área
-/contracts/ @janus-protocol/contracts-team
-/apps/gateway/ @janus-protocol/gateway-team
-/packages/ @janus-protocol/sdk-team
+# Core Infra
+/core/* @janus-infra
+
+# Bridge e Blockchain
+/bridge/* @janus-chain
+/programs/solana/* @janus-chain
+
+# AI Layer
+/ai/* @janus-ai
+/api/ai/* @janus-ai
+/packages/connectors/* @janus-ai
+
+# Contracts
+/contracts/* @janus-contracts
+
+# Docs
+/docs/* @janus-docs
