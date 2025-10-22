@@ -16,7 +16,7 @@ r.post("/execute", async (req, res) => {
     const result = await fn(body.params || {});
     const taskId = "task_" + Date.now();
 
-    // liquidação on-chain (DEMO): converte taskId em bytes32 previsível + recompensa fixa
+    // liquidação on-chain (DEMO): converte taskId em bytes32 previsível + recompensa fixa  
     const taskIdHex = "0x" + randomBytes(32).toString("hex");
     const agent = (body as any).agent || process.env.TASK_VERIFIER_ADDRESS || "0x0000000000000000000000000000000000000000";
     const amountWei = (10n ** 18n).toString(); // 1 JNS – ajuste sua política
