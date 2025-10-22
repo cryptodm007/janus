@@ -4,8 +4,6 @@
  */
 import EventEmitter from "events";
 export const aiChannel = new EventEmitter();
-
-// Exemplo: publicar evento quando nova liquidez detectada
 export function emitLiquidityEvent(pair: string, delta: number) {
   aiChannel.emit("POOL_IMBALANCE_DETECTED", { pair, delta });
 }
