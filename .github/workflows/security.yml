@@ -1,9 +1,25 @@
 name: Security Scan
-on: push
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  scan:
+  gitleaks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: zricethezav/gitleaks-action@v2
+
+  semgrep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/ci
+            p/secrets
+            p/nodejs
+            p/express
