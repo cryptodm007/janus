@@ -1,9 +1,11 @@
-// contador simples; em produção use prom-client/otel
 let counters: Record<string, number> = {
   ai_tasks_total: 0,
   ai_tasks_success_total: 0,
   ai_tasks_fail_total: 0,
-  onchain_settlement_total: 0
+  onchain_settlement_total: 0,
+  security_reject_total: 0,
+  rate_limit_drops_total: 0,
+  circuit_breaker_open_total: 0
 };
 
 export function inc(name: keyof typeof counters, v: number = 1) {
